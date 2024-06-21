@@ -3,7 +3,6 @@ Copyright (c) 2024 Yazalde Filimone. All rights reserved.
 
 
 */
-
 use crate::ast;
 use ast::Node;
 
@@ -26,18 +25,20 @@ impl<'a> MdxParser<'a> {
   }
   // parser methods
   fn parse_root(&mut self) -> ast::Root {
-    let mut document = ast::Root::default();
-    while !self.is_end() {
-      document.children.push(self.parse_node());
+    let mut root = ast::Root::default();
+    while let Some(node) = self.parse_node() {
+      root.children.push(node);
     }
-    document
+    root
   }
-
   // ==================
   // parse node
   //
-  fn parse_node(&mut self) -> ast::Node {
+  fn parse_node(&mut self) -> Option<ast::Node> {
     self.skip_trivial();
+    if self.is_end() {
+      return None;
+    }
     let node = match self.peek_one() {
       '#' => self.parse_heading(),
       '`' => self.parse_code(),
@@ -48,7 +49,7 @@ impl<'a> MdxParser<'a> {
       '1'..='9' | '*' | '_' | '+' | '-' => self.parse_list(),
       _ => panic!("Unknown character {}", self.peek_one()),
     };
-    node
+    Some(node)
   }
 
   // ==================
@@ -56,9 +57,6 @@ impl<'a> MdxParser<'a> {
   //
 
   fn parse_line_node(&mut self) -> ast::Node {
-    if self.peek_one().is_whitespace() {
-      self.skip_whitespace();
-    }
     match self.peek_one() {
       '`' => self.parse_inline_code(),
       '*' => {
@@ -97,7 +95,6 @@ impl<'a> MdxParser<'a> {
   }
 
   fn parse_paragraphs(&mut self) -> ast::Node {
-    self.skip_whitespace();
     let mut children = Vec::new();
     while !self.is_end() && !self.is_doble_newline() {
       children.push(self.parse_line_node());
@@ -122,12 +119,14 @@ impl<'a> MdxParser<'a> {
     while !self.is_end() && self.is_doble_newline() {
       children.push(self.parse_unordered_list_item(&indicator.to_string()));
     }
+    self.consume_expect_double_newline();
     Node::List(ast::List { ordered: false, start: None, children: Box::new(children) })
   }
   // - Item
   fn parse_unordered_list_item(&mut self, indicator: &str) -> ast::Node {
     self.consume_expect(indicator);
     self.consume_expect_whitespace();
+
     let line = self.parse_line_node();
     return line;
   }
@@ -148,6 +147,7 @@ impl<'a> MdxParser<'a> {
     while !self.is_end() && self.is_doble_newline() {
       children.push(self.parse_ordered_list_item());
     }
+    self.consume_expect_double_newline();
     Node::List(ast::List { ordered: true, start, children: Box::new(children) })
   }
 
@@ -171,7 +171,7 @@ impl<'a> MdxParser<'a> {
     self.consume_expect(">");
     let mut children = Vec::new();
     while !self.is_end() && self.is_newline() {
-      children.push(self.parse_node());
+      children.push(self.parse_node().unwrap());
     }
     Node::Blockquote(ast::Blockquote { children: Box::new(children) })
   }
@@ -229,8 +229,8 @@ impl<'a> MdxParser<'a> {
     self.consume_expect("#");
     let level = self.parse_heading_level();
     self.consume_expect_whitespace();
-    let text = self.consume_while(|c| c != '\n').to_owned();
-    self.skip_trivial();
+    let text = self.consume_while(|c| c != '\n').to_string();
+    self.consume_expect_newline();
     Node::Heading(ast::Heading { level, text })
   }
 
@@ -258,7 +258,7 @@ impl<'a> MdxParser<'a> {
   fn parse_code_block(&mut self) -> ast::Node {
     let language = self.parse_code_block_language();
     let mut code = String::new();
-    while !self.is_end() && self.starts_with("```") {
+    while !self.is_end() && !self.starts_with("```") {
       code.push_str(&self.consume_while(|character| character != '\n'));
     }
     Node::CodeBlock(ast::CodeBlock { language, code, meta: None })
@@ -273,7 +273,7 @@ impl<'a> MdxParser<'a> {
   // tex e.g: This is a test, **bold** and *italic* and `code`.
   fn parse_text(&mut self) -> ast::Node {
     let mut text = String::new();
-    while !self.is_end() && self.is_newline() {
+    while !self.is_end() && !self.is_doble_newline() {
       if self.contains(vec!["`", "*", "_"]) {
         break;
       }
@@ -327,18 +327,18 @@ impl<'a> MdxParser<'a> {
     }
   }
 
-  fn consume_expect_many(&mut self, expectds: Vec<&'a str>) -> &'a str {
-    for expectd in &expectds {
-      if &self.peek_many(expectd.len()) == expectd {
-        self.advance_many(expectd.len());
-        return expectd;
-      }
-    }
-    // report error
-    let report_text = expectds.join(" or ");
-    let current_text = &self.peek_many(expectds[0].len());
-    panic!("Expected '{}' but got '{}'", report_text, current_text);
-  }
+  // fn consume_expect_many(&mut self, expectds: Vec<&'a str>) -> &'a str {
+  //   for expectd in &expectds {
+  //     if &self.peek_many(expectd.len()) == expectd {
+  //       self.advance_many(expectd.len());
+  //       return expectd;
+  //     }
+  //   }
+  //   // report error
+  //   let report_text = expectds.join(" or ");
+  //   let current_text = &self.peek_many(expectds[0].len());
+  //   panic!("Expected '{}' but got '{}'", report_text, current_text);
+  // }
 
   fn contains(&self, expectds: Vec<&str>) -> bool {
     for expectd in expectds {
@@ -350,11 +350,16 @@ impl<'a> MdxParser<'a> {
   }
 
   fn consume_expect_newline(&mut self) {
-    if !self.is_end() && self.peek_one() == '\n' {
-      self.advance_one();
-    } else {
-      panic!("Expected newline but got '{}'", self.peek_one());
+    if !self.is_end() && self.is_newline() {
+      return self.advance_one();
     }
+    panic!("Expected newline but got '{}'", self.peek_one());
+  }
+  fn consume_expect_double_newline(&mut self) {
+    if !self.is_end() && self.is_doble_newline() {
+      return self.advance_many(2);
+    }
+    panic!("Expected double newline but got '{}'", self.peek_one());
   }
 
   fn consume_while(&mut self, mut test: impl FnMut(char) -> bool) -> &'a str {
