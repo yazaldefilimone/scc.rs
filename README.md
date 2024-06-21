@@ -5,7 +5,7 @@
               +--------+                          +----------+
 Input    ->-  | Parser |     ->-    AST    ->-    | Compiler |   ->-  JSX/Vue/HTML...
               +--------+             |            +----------+
-                                    X
+                                     X
                                      |
                               +--------------+
                               | Transformers |
