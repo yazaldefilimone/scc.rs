@@ -2,6 +2,7 @@ mod ast;
 mod core;
 mod format;
 mod parser;
+mod transformer;
 use parser::MdxParser;
 
 fn main() {
