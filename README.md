@@ -3,7 +3,7 @@
 | .......... parse ... | ... run ... | ... stringify ..........|
 
           +--------+                     +----------+
-Input ->- | Parser | ->- Syntax Tree ->- | Compiler | ->- Output
+Input ->- | Parser | ->- AST ->- | Compiler | ->- Output
           +--------+          |          +----------+
                               X
                               |
