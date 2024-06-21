@@ -1,2 +1,5 @@
 # scc.rs
-Structured Content Compiler
+
+Structured Content Compiler in Rust
+
+## Usage
