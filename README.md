@@ -1,5 +1,15 @@
 # scc.rs
 
-Structured Content Compiler in Rust
+```ascii
+| ........................ process ........................... |
+| .......... parse ... | ... run ... | ... stringify ..........|
 
-## Usage
+          +--------+                     +----------+
+Input ->- | Parser | ->- Syntax Tree ->- | Compiler | ->- Output
+          +--------+          |          +----------+
+                              X
+                              |
+                       +--------------+
+                       | Transformers |
+                       +--------------+
+```
