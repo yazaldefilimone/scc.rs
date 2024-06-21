@@ -16,7 +16,7 @@ impl Default for Root {
 
 #[derive(Debug)]
 pub enum Node {
-  Text(Text),                     // text
+  Text(Text),
   CodeBlock(CodeBlock),           // ```ts code```
   Html(String),                   // <div>html</div>
   Heading(Heading),               // # heading
@@ -27,8 +27,8 @@ pub enum Node {
   ThematicBreak,                  // ---
   SoftBreak,                      // \
   HardBreak,                      // \
-  Emphasis(Emphasis),             // *emphasis*
-  Strong(Strong),                 // **strong**
+  Bold(Bold),                     // **strong**
+  Italic(Italic),                 // ~~strikethrough~~ or *italic*
   Link(Link),                     // [link](url)
   Image(Link),                    // ![image](url)
   InlineCode(InlineCode),         // `inline code`
@@ -61,24 +61,13 @@ pub struct Link {
 }
 
 #[derive(Debug)]
-pub struct Emphasis {
+pub struct Bold {
   pub children: Box<Vec<Node>>,
 }
 
 #[derive(Debug)]
-pub struct Strong {
+pub struct Italic {
   pub children: Box<Vec<Node>>,
-}
-impl Strong {
-  pub fn new(children: Box<Vec<Node>>) -> Strong {
-    Strong { children }
-  }
-}
-
-impl Emphasis {
-  pub fn new(children: Box<Vec<Node>>) -> Emphasis {
-    Emphasis { children }
-  }
 }
 
 #[derive(Debug)]
@@ -87,21 +76,9 @@ pub struct Heading {
   pub text: String,
 }
 
-impl Heading {
-  pub fn new(level: usize, text: String) -> Heading {
-    Heading { level, text }
-  }
-}
-
 #[derive(Debug)]
 pub struct Paragraph {
   pub children: Box<Vec<Node>>,
-}
-
-impl Paragraph {
-  pub fn new(children: Box<Vec<Node>>) -> Paragraph {
-    Paragraph { children }
-  }
 }
 
 #[derive(Debug)]
@@ -114,12 +91,6 @@ pub struct List {
 #[derive(Debug)]
 pub struct Blockquote {
   pub children: Box<Vec<Node>>,
-}
-
-impl Blockquote {
-  pub fn new(children: Box<Vec<Node>>) -> Blockquote {
-    Blockquote { children }
-  }
 }
 
 #[derive(Debug)]
