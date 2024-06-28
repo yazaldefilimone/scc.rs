@@ -17,7 +17,7 @@ Input    ->-  | Parser |     ->-    AST    ->-    | Compiler |   ->-  JSX/Vue/HT
 
 - How SCC works?
 
-1. React (JSX)
+1. Markdown(with jsx/tsx)
 
 ```mdx
 export function Thing() {
@@ -46,7 +46,7 @@ export default function MDXContent() {
 }
 ```
 
-2. Vue
+2. Markdown(with vue)
 
 ```html
 <script setup>
