@@ -19,9 +19,9 @@ impl<'a> MdxParser<'a> {
     MdxParser { input, cursor: 0 }
   }
 
-  pub fn parse(input: &str) -> ast::Root {
+  pub fn parse(input: &str) -> ast::Ast {
     let mut parser = MdxParser::new(input);
-    parser.parse_root()
+    ast::Ast::Root(parser.parse_root())
   }
   // parser methods
   fn parse_root(&mut self) -> ast::Root {
