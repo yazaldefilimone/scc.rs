@@ -1,9 +1,9 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Ast {
   Root(Root),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Root {
   pub children: Box<Vec<Node>>,
 }
@@ -14,7 +14,7 @@ impl Default for Root {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Node {
   Text(Text),
   CodeBlock(CodeBlock),           // ```ts code```
@@ -36,78 +36,78 @@ pub enum Node {
   VueComponent(VueComponent),     // Vue components e.g. <Sidebar v-bind:is-open="true"/>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InlineCode {
   pub code: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CodeBlock {
   pub language: String,
   pub code: String,
   pub meta: Option<Vec<String>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Text {
   pub text: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Link {
   pub url: String,
   pub alt: String,
   pub title: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Bold {
   pub children: Box<Vec<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Italic {
   pub children: Box<Vec<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Heading {
   pub level: usize,
   pub text: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Paragraph {
   pub children: Box<Vec<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct List {
   pub ordered: bool,
   pub start: Option<usize>,
   pub children: Box<Vec<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Blockquote {
   pub children: Box<Vec<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ReactComponent {
   pub name: String,
   pub props: Vec<String>,
   pub children: Box<Vec<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VueComponent {
   pub name: String,
   pub props: Vec<String>,
   pub children: Box<Vec<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Table {
   pub header: Vec<String>,
   pub rows: Vec<Vec<String>>,
